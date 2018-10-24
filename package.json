@@ -1,0 +1,27 @@
+{
+  "name": "our-two-cents-api",
+  "version": "1.0.0",
+  "description": "API for Our Two Cents website",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/spoofBlue/Our-Two-Cents-API.git"
+  },
+  "keywords": [
+    "API",
+    "Node",
+    "Express",
+    "Mongoose",
+    "Chai",
+    "Mocha"
+  ],
+  "author": "Cory Nanni",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/spoofBlue/Our-Two-Cents-API/issues"
+  },
+  "homepage": "https://github.com/spoofBlue/Our-Two-Cents-API#readme"
+}
