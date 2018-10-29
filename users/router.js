@@ -68,13 +68,13 @@ router.post(`/`, jsonParser, (req, res) => {
         .catch(err => {
             console.log('err=', err.message);
             const message = `Failed to create user.`;
-            return res.status(400).send(message);
+            res.status(400).send(message);
         });
     })
     .catch(function(error) {
         console.log('error.message=', error.message);
         const message = `Failed to hash password before creating user.`;
-        return res.status(400).send(message);
+        res.status(400).send(message);
     });
 });
 
@@ -194,7 +194,6 @@ function checkPostRequestForErrors(req) {
                     field : `userEmail`
                 });
             }
-            console.log(`errorMessage Users.find for duplicates=`, errorMessage);
             response();
         })
         .catch(() => {
@@ -204,11 +203,9 @@ function checkPostRequestForErrors(req) {
 
     return checkNotDuplicate
     .then(() => {
-        console.log(`checkPostRequestforErrors. made into the then statement. errorMessage=`, errorMessage);
         return errorMessage;
     })
     .catch(() => {
-        console.log(`checkPostRequestforErrors. made into the catch statement. errorMessage=`, errorMessage);
         errorMessage.push({
             message : `Server currently down. Please try again later.` ,
             field : null
