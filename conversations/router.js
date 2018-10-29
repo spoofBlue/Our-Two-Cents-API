@@ -32,7 +32,7 @@ const convoFinished = (req, res, next) => {
     Conversations
         .findById(req.params.id)
         .then(conversation => {
-            // Verifies the conversation is still ongoing.  Even if it isn't, still let the user have this updated information.
+            // Verifies the conversation is still ongoing.
             if (conversation.conversationFinished) {
                 const msg = `Someone has left this conversation.`;
                 return res.status(200).json(conversation.serialize());  // which includes (conversationFinished = true) info.
@@ -47,7 +47,8 @@ const convoFinished = (req, res, next) => {
 
 router.use(`/:id`, convoAuth, convoFinished);
 
-// User get initial convoData this way. Also checks in here for updates in messageList.
+// User get initial convoData this way. 
+// !!!! If not using the 3rd party API for messaging, can check in here for updates in messageList.
 router.get(`/:id`, (req, res) => {
     Conversations
         .findById(req.params.id)
@@ -59,7 +60,7 @@ router.get(`/:id`, (req, res) => {
         });
 });
 
-// POST This occurs when the two people connect for a conversation for the first time.  The person who joins the conversation technically
+// POST This occurs when the two people connect to a conversation for the first time.  The person who joins the conversation technically
 // posts the conversation.
 
 router.post(`/`, jsonParser, (req, res) => {
@@ -68,28 +69,101 @@ router.post(`/`, jsonParser, (req, res) => {
         console.log(`errorMessage in post request block=`, errorMessage);
         if (errorMessage.length > 0) {
             return res.status(422).json(errorMessage);
-        }
+        } 
         Conversations
         .create({
-            /// !!!! Fill me in !!!! continue fixing from here.  Don't forget to bring in checkPostRequestForErrors (like user/router)
+            _id : req.body.conversationId,
+            conversationId : req.body.conversationId,
+            hostUserId : req.body.hostUserId,
+            hostUsername : req.body.hostUsername,
+            guestUserId : req.body.guestUserId,
+            guestUsername : req.body.guestUsername,
+            topicId : req.body.topicId,
+            topicName : req.body.topicName
         })
-    })
-    .then(user => res.status(201).json(user.serialize()))
-    .catch(error => {
-        console.log('error.message=', error.message);
-        const message = `Failed to start the conversation at this time.`;
-        return res.status(400).send(message);
+        .then(convo => res.status(201).json(convo.serialize()))
+        .catch(error => {
+            console.log('error.message=', error.message);
+            const message = `Failed to start the conversation at this time.`;
+            return res.status(400).send(message);
+        });
     });
 });
 
 // UPDATE  Whenver a user posts a new message, or a user leaves the conversation, will they update this conversation.
+// !!! May not utilize these if I use a 3rd party API.
+router.put(`/:id`, jsonParser, (req, res) => {
+    if (!(req.params.id && req.body.userId && req.params.id === req.body.userId)) {
+        const msg = `${req.params.id} and ${req.body.userId} not the same`;
+        return res.status(400).json({message : msg});
+    }
+
+    const toUpdate = {};
+    const updateableFields = [`messageList`,`conversationFinished`];
+    updateableFields.forEach(field => {
+        toUpdate[field] = req.body[field];
+    });
+
+    Conversations
+    .findByIdAndUpdate(req.params.id, {$set : toUpdate})
+    .then(() => res.status(204).end())
+    .catch(error => {
+        return res.status(400).send(error);
+    });
+});
 
 // DELETE  Will we delete these conversations permanently?  Will we have them removed after several days/hours to save space?
 // Perhaps won't be concerned with deletion specifics until another iteration.
+router.delete(`/:id`, (req, res) => {
+    Conversations.findByIdAndRemove(req.params.id)
+    .then(() => res.status(204).end())
+    .catch(error => {
+        res.status(400).send(error.message);
+    });
+});
 
 router.use('*', function (req, res) {
     res.status(404).json({ message: 'Routing Not Found.' });
 });
+
+// Helper functions
+function checkPostRequestForErrors(req) {
+    // Checks fields to make sure standards are met.  Including: having required fields, certain fields are strings, userEmail and userPassword
+    // are explicitly trimmed,  password adhere to character length requirements, and userEmail is unique in database.
+    // Returns the array errorMessage, which populates only if errors occur.
+    let errorMessage = [];
+    checkNotDuplicate = new Promise((response, reject) => {
+        Conversations
+        .find({conversationId : req.body.conversationId})
+        .countDocuments()
+        .then(count => {
+            if (count > 0) {
+                errorMessage.push({
+                    message : `This conversation has already been created!` ,
+                });
+            }
+            console.log(`errorMessage Users.Conversations for duplicates=`, errorMessage);
+            response();
+        })
+        .catch(() => {
+            reject(`Server currently down. Please try again later.`);
+        });   
+    });
+
+    return checkNotDuplicate
+    .then(() => {
+        console.log(`checkPostRequestforErrors. made into the then statement. errorMessage=`, errorMessage);
+        return errorMessage;
+    })
+    .catch(() => {
+        console.log(`checkPostRequestforErrors. made into the catch statement. errorMessage=`, errorMessage);
+        errorMessage.push({
+            message : `Server currently down. Please try again later.` ,
+            field : null
+        });
+        return errorMessage;
+    });
+}
 
 //Export
 module.exports = {router};

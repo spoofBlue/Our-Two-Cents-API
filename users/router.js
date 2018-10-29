@@ -4,7 +4,7 @@ const bodyParser = require(`body-parser`);
 const passport = require(`passport`);
 
 const {Users} = require(`./model`);
-const {router : authRouter, localStrategy, jwtStrategy} = require(`../auth`);
+const {localStrategy, jwtStrategy} = require(`../auth`);
 
 //Passport Strategies
 passport.use(localStrategy);
