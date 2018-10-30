@@ -33,11 +33,6 @@ UserSchema.statics.hashPassword = function(password) {
     return bcrypt.hash(password, 10);
 };
 
-//Syncronous version if needed.
-UserSchema.statics.hashPasswordSync = function(password) {
-    return bcrypt.hashSync(password, 10);
-};
-
 const Users = mongoose.model(`Users`, UserSchema);
 
 module.exports = {Users};
