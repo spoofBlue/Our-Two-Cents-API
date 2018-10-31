@@ -59,8 +59,7 @@ router.post(`/`, jsonParser, (req, res) => {
         Users
         .create({
             userPassword : hashedPassword ,
-            username : req.body.username ,
-            userFullName : req.body.userFullName ,
+            userFirstName : req.body.userFirstName ,
             userLastName : req.body.userLastName ,
             userEmail : req.body.userEmail
         })
@@ -90,7 +89,7 @@ router.put(`/:id`, jwtAuth, jsonParser, (req, res) => {
     }
 
     const toUpdate = {};
-    const updateableFields = [`userPassword`,`username`,`userFullName`,`userEmail`];
+    const updateableFields = [`userPassword`,`userFirstName`, 'userLastName', `userEmail`];
     updateableFields.forEach(field => {
         if (field in req.body) {
             if (field === "userPassword") {
@@ -128,8 +127,8 @@ function checkPostRequestForErrors(req) {
     // Checks fields to make sure standards are met.  Including: having required fields, certain fields are strings, userEmail and userPassword
     // are explicitly trimmed,  password adhere to character length requirements, and userEmail is unique in database.
     // Returns the array errorMessage, which populates only if errors occur.
-    const requiredFields = ['username', `userPassword`, `userFullName`, `userEmail`];
-    const stringFields = ['username', 'userPassword', `userFullName`, `userEmail`];
+    const requiredFields = [`userPassword`, `userFirstName`, `userLastName`,`userEmail`];
+    const stringFields = ['userPassword', `userFirstName`, `userLastName`, `userEmail`];
     const explicitlyTrimmedFields = ['userEmail', 'userPassword'];
     const sizedFields = {
         userPassword: { min: 10, max: 72 }
@@ -168,7 +167,7 @@ function checkPostRequestForErrors(req) {
     Object.keys(sizedFields).forEach(field => {
         if ('min' in sizedFields[field] && req.body[field] && req.body[field].trim().length < sizedFields[field].min) {
             errorMessage.push({
-                message : `The field ${field} must be more than ${sizedFields[field].min} characters.` ,
+                message : `The field ${field} must be at least ${sizedFields[field].min} characters.` ,
                 field : field
             });
         }
@@ -176,7 +175,7 @@ function checkPostRequestForErrors(req) {
     Object.keys(sizedFields).forEach(field => {
         if ('max' in sizedFields[field] && req.body[field] && req.body[field].trim().length > sizedFields[field].max) {
             errorMessage.push({
-                message : `The field ${field} must be less than ${sizedFields[field].max} characters.` ,
+                message : `The field ${field} must be at most ${sizedFields[field].max} characters.` ,
                 field : field
             });
         }
@@ -184,13 +183,12 @@ function checkPostRequestForErrors(req) {
 
     const checkNotDuplicate = new Promise((response, reject) => {
         Users
-        .find({username : req.body.username})
+        .find({userEmail : req.body.userEmail})
         .countDocuments()
         .then(count => {
             if (count > 0) {
                 errorMessage.push({
-                    //message : `That email already has an account associated with it. You can log through this email!` ,
-                    message : `That username is already taken. The username must be unique.`,
+                    message : `That email already has an account associated with it. You can log through this email!` ,
                     field : `userEmail`
                 });
             }
@@ -215,13 +213,13 @@ function checkPostRequestForErrors(req) {
 }
 
 function checkPutRequestForErrors(req) {
-    // Checks fields to make sure standards are met.  Including: certain fields are strings, username and password
-    // are explicitly trimmed, username and password adhere to character length requirements, and username is unique in database.
+    // Checks fields to make sure standards are met.  Including: certain fields are strings, userEmail and password
+    // are explicitly trimmed, userEmail and password adhere to character length requirements, and userEmail is unique in database.
     // Returns the array errorMessage, which populates only if errors occur.
-    const stringFields = ['username', 'userPassword', `userFullName`, 'userEmail'];
-    const explicitlyTrimmedFields = ['username', 'userPassword', 'userEmail'];
+    const stringFields = ['userPassword', `userFirstName`, `userLastName`, 'userEmail'];
+    const explicitlyTrimmedFields = ['userPassword', 'userEmail'];
     const sizedFields = {
-        username: { min: 3 },
+        userEmail: { min: 6 },
         userPassword: { min: 10, max: 72 }
           // bcrypt truncates after 72 characters, so let's not give the illusion of security by storing extra (unused) info.
       };
@@ -253,13 +251,12 @@ function checkPutRequestForErrors(req) {
 
     const checkNotDuplicate = new Promise((response, reject) => {
         Users
-        .find({username : req.body.username})
+        .find({userEmail : req.body.userEmail})
         .countDocuments()
         .then(count => {
             if (count > 0) {
                 errorMessage.push({
-                    //message : `That email already has an account associated with it. You can log through this email!` ,
-                    message : `That username is already taken. The username must be unique.`,
+                    message : `That email already has an account associated with it. You can log through this email!` ,
                     field : `userEmail`
                 });
             }

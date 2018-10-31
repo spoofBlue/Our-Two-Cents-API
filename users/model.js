@@ -4,24 +4,25 @@ const bcrypt = require('bcryptjs');
 
 const UserSchema = mongoose.Schema({
     "userId" : {type : String},
-    "username" : {type : String},
     "userEmail" : {type : String , required : true},
-    "userFullName" : {type : String, required : true},
+    "userFirstName" : {type : String, required : true},
+    "userLastName" : {type : String, required : true},
     "userPassword" : {type : String , required : true}
 });
 
 /*
 UserSchema.virtual(`username`).get(function() {
-    return `${this.userFirstName.trim()} ${this.userLastName.trim()}`
+    return `${this.userFirstName.trim()} ${this.userLastName.trim().slice(0,1)}.`;
 });
 */
 
 UserSchema.methods.serialize = function() {
     return {
-        username : this.username,
+        //username : this.username,
         userId : this._id ,
         userEmail : this.userEmail,
-        userFullName : this.userFullName
+        userFirstName : this.userFirstName,
+        userLastName : this.userLastName
     }
 }
 

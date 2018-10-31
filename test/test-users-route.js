@@ -50,10 +50,10 @@ function seedUserData() {
 
 function generateUser(password) {
     const sampleUser = {
-        username : generateFakerName() ,
         userPassword : password ,
-        userFullName : generateString() ,
-        userEmail : generateString()
+        userFirstName : generateString() ,
+        userLastName : generateString() ,
+        userEmail : generateFakerName()
     }
     return sampleUser;
 }
@@ -64,7 +64,8 @@ function generateString() {
 }
 
 function generateFakerName() {
-    return faker.name.findName();
+    const name = faker.name.findName()
+    return `${name}@email.com`;
 }
 
 function tearSeedDb() {
@@ -74,6 +75,7 @@ function tearSeedDb() {
 
 function getAuthenticationJWT(username, password) {
     // Pass in credenitials seeded into the database. Retrieves a JWT token and returns it.
+    // note: renaming userEmail to username for jwt.sign's strict terms.
     return chai.request(app)
     .post('/api/auth/login')
     .send({ username : username, password : password})
@@ -97,8 +99,8 @@ describe(`User Integration Testing`, function() {
             return Users.findOne();
         })
         .then(function(user) {
-            username = user.username;
-            return getAuthenticationJWT(username, password);
+            userEmail = user.userEmail;
+            return getAuthenticationJWT(userEmail, password);
         })
         .catch(function(error) {
             throw error;
@@ -135,7 +137,7 @@ describe(`User Integration Testing`, function() {
 
         it(`should show a user has all the correct Keys in it`, function() {
             let resUser;
-            const userKeys = [`userId`,`username`,`userFullName`,`userEmail`];
+            const userKeys = [`username`,`userId`,`userFirstName`,`userLastName`,`userEmail`];
             return chai.request(app)
                 .get(`/api/users`)
                 .set('Authorization', `Bearer ${JWT_KEY}`)
@@ -159,7 +161,7 @@ describe(`User Integration Testing`, function() {
         });
 
         it(`should return the user through the GET request specifying a particular id `, function() {
-            const userKeys = [`userId`,`username`,`userFullName`,`userEmail`];
+            const userKeys = [`userId`,`userFirstName`,`userLastName`,`userEmail`];
 
             let resUser;
             return Users.findOne()
@@ -189,7 +191,7 @@ describe(`User Integration Testing`, function() {
     describe(`User POST requests`, function() {
         it(`should post a new user into the database with all required keys (with correct values).`, function() {
             let newUser = generateUser("hellohello");
-            const userKeys = [`userId`, `username`, `userFullName`,`userEmail`];
+            const userKeys = [`username`,`userId`,`userFirstName`,`userLastName`,`userEmail`];
             let resUser;
             return chai.request(app)
             .post(`/api/users`)
@@ -216,7 +218,7 @@ describe(`User Integration Testing`, function() {
 
         it(`should not post a request that is missing certain keys in req.body`, function() {
             const badUser = {
-                username : "ralph" ,
+                userEmail : "ralph@oh.com" ,
                 userPassword : "gingersnaps"
             }
             
@@ -237,13 +239,12 @@ describe(`User Integration Testing`, function() {
         it(`should make a PUT request and replace the intended information.`, function() {
             let updateInfo = {
                 userId : "person" ,
-                username : "asdfasdf" ,
-                userFullName : "Hill Smith" ,
+                userFirstName : "Hill" ,
                 userEmail : "newEmail@d.com" ,
                 userDescription : "Hello, I have diner take all my food!"
             };
-            // Note updating all the fields except userPassword and userPhoneNumber
-            const userKeys = [`userPassword`,`username`,`userFullName`,`userEmail`];
+            // Note updating all the fields except userPassword, userLastName.
+            const userKeys = [`userPassword`,`userFirstName`,`userEmail`];
 
             let chosenUser;
             return Users.findOne()
@@ -277,8 +278,7 @@ describe(`User Integration Testing`, function() {
         it(`should fail to update a user because the id in the user's info is invalid`, function() {
             const badId = "1";
             let updateInfo = {
-                username : "asdfasdf" ,
-                userFullName : "Hill Smith" ,
+                userFirstName : "Hill" ,
                 userEmail : "newEmail@d.com" ,
             };
 

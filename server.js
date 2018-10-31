@@ -27,11 +27,13 @@ app.use(morgan(`dev`));
 app.use(express.json());
 
 // CORS
+/*   !!! specify a specific CLIENT_ORIGIN in config.js to account for localhost as well.
 app.use(
     cors({
         origin: CLIENT_ORIGIN
     })
 );
+*/
 
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
@@ -109,6 +111,5 @@ if (require.main === module) {
 // Export App
 module.exports = {app, runServer, closeServer};
 
- // Note, our database names are:
+ // Note, our database name is:
  // our-two-cents--users
- // out-two-cents--conversations
