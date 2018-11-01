@@ -10,15 +10,13 @@ const UserSchema = mongoose.Schema({
     "userPassword" : {type : String , required : true}
 });
 
-/*
 UserSchema.virtual(`username`).get(function() {
     return `${this.userFirstName.trim()} ${this.userLastName.trim().slice(0,1)}.`;
 });
-*/
 
 UserSchema.methods.serialize = function() {
     return {
-        //username : this.username,
+        username : this.username,
         userId : this._id ,
         userEmail : this.userEmail,
         userFirstName : this.userFirstName,

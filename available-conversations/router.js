@@ -14,7 +14,7 @@ const jsonParser = bodyParser.json();
 router.get(`/`, (req, res) => {
     // Can potentially place a filter in here. (Filter by topicName)
     AvailableConversations
-        .find()
+        .find({status : "available"})
         .then(availableConversations => {
             res.status(200).json(availableConversations.map(availConvo => availConvo.serialize()));  
         })
@@ -37,10 +37,11 @@ router.get(`/:id`, (req, res) => {
 
 // POST. When person initially creates a conversation. Has relevant info on it.
 router.post(`/`, jsonParser, (req, res) => {
+    console.log(`conversation post request. req.body=`,req.body);
     AvailableConversations
     .create({
-        hostUserId : req.body.hostUserId,  // could use userId
-        hostUsername : req.body.hostUsername,   // could use username
+        hostUserId : req.body.hostUserId,
+        hostUsername : req.body.hostUsername,
         hostViewpoint : req.body.hostViewpoint,
         topicId : req.body.topicId,
         topicName : req.body.topicName
@@ -54,7 +55,7 @@ router.post(`/`, jsonParser, (req, res) => {
 });
 
 // PUT or DELETE.  When the host cancels their previously made conversation.  status changed to 'cancelled'
-// When the guest chooses the conversation, status changed to closed.
+// When the guest chooses the conversation, status changed to joined.
 // Alternatively, we could delete this availableConversation entirely and show no trace of it's existance.
 // Regardless, this must be reflected to others who attempt to GET the specific availableConversation. status = !'available' or no existing can turn them away.
 
@@ -73,19 +74,19 @@ router.put(`/:id`, jsonParser, (req, res) => {
     .findById(req.params.id)
     .then(availConvo => {
         if (availConvo.status !== 'available') {
-            return res.status(200).send({status : availConvo.status});
+            return res.status(200).send({status : 'unavailable'});
         } else if (availConvo.status === 'available') {
             AvailableConversations
             .findByIdAndUpdate(req.params.id, {$set : toUpdate}, {new : true})
             .then(convo => {
-                if (req.body.status === 'closed') {
+                if (req.body.status === 'joined') {
                     res.status(200).json(convo.serialize());
                 }
                 res.status(200).send({status : availConvo.status});
             })
             .catch(err => {
                 console.log(err.message);
-                const message = `The conversation was already taken.`;
+                const message = `The conversation is no longer available.`;
                 return res.status(400).send(message);
             });
         }
