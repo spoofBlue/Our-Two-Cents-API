@@ -10,7 +10,7 @@ const messageSchema = new Schema({
 });
 
 const ConversationSchema = mongoose.Schema({
-    _id : {type : String, required : true},
+    _id : {type : String},
     conversationId : {type : String, required : true},
     hostUserId : {type : String, required : true},
     hostUsername : {type : String, required : true},

@@ -37,7 +37,7 @@ router.get(`/:id`, (req, res) => {
 
 // POST. When person initially creates a conversation. Has relevant info on it.
 router.post(`/`, jsonParser, (req, res) => {
-    console.log(`conversation post request. req.body=`,req.body);
+    console.log(`availableConversation post request. req.body=`,req.body);
     AvailableConversations
     .create({
         hostUserId : req.body.hostUserId,
@@ -60,6 +60,7 @@ router.post(`/`, jsonParser, (req, res) => {
 // Regardless, this must be reflected to others who attempt to GET the specific availableConversation. status = !'available' or no existing can turn them away.
 
 router.put(`/:id`, jsonParser, (req, res) => {
+    console.log(`availableConversation put request. req.body=`,req.body);
     if (!(req.params.id && req.body.conversationId && req.params.id === req.body.conversationId)) {
         const msg = `${req.params.id} and ${req.body.conversationId} not the same.`;
         return res.status(400).json({message : msg});
@@ -79,6 +80,7 @@ router.put(`/:id`, jsonParser, (req, res) => {
             AvailableConversations
             .findByIdAndUpdate(req.params.id, {$set : toUpdate}, {new : true})
             .then(convo => {
+                console.log(`available conversation put before sending response.`);
                 if (req.body.status === 'joined') {
                     res.status(200).json(convo.serialize());
                 }

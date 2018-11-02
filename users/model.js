@@ -11,7 +11,7 @@ const UserSchema = mongoose.Schema({
 });
 
 UserSchema.virtual(`username`).get(function() {
-    return `${this.userFirstName.trim()} ${this.userLastName.trim().slice(0,1)}.`;
+    return `${this.userFirstName.trim()} ${this.userLastName.trim().slice(0,1)}`;
 });
 
 UserSchema.methods.serialize = function() {

@@ -24,7 +24,8 @@ const convoAuth = (req, res, next) => {
             }
         })
         .catch(err => {
-            return res.status(500).json({message :`Internal Server Error`});
+            console.log(`in convoAuth error. err=`, err);
+            return res.status(500).json({message :`Internal Server Error.`});
         });
 }
 
@@ -41,11 +42,12 @@ const convoFinished = (req, res, next) => {
             }
         })
         .catch(err => {
-            return res.status(500).json({message :`Internal Server Error`});
+            console.log(`in convoFinished error. err=`, err);
+            return res.status(500).json({message :`Internal Server Error.`});
         });
 }
 
-router.use(`/:id`, convoAuth, convoFinished);
+// !!! don't need anymore now that middleware in requests themselves. router.use(`/:id`, convoAuth, convoFinished);
 
 // User get initial convoData this way. 
 // !!!! If not using the 3rd party API for messaging, can check in here for updates in messageList.
@@ -64,6 +66,7 @@ router.get(`/:id`, (req, res) => {
 // posts the conversation.
 
 router.post(`/`, jsonParser, (req, res) => {
+    console.log(`in conversations POST. req.body=`, req.body);
     checkPostRequestForErrors(req)
     .then((errorMessage) => {
         console.log(`errorMessage in post request block=`, errorMessage);
@@ -92,7 +95,7 @@ router.post(`/`, jsonParser, (req, res) => {
 
 // UPDATE  Whenver a user posts a new message, or a user leaves the conversation, will they update this conversation.
 // !!! May not utilize these if I use a 3rd party API.
-router.put(`/:id`, jsonParser, (req, res) => {
+router.put(`/:id`, [jsonParser, convoAuth, convoFinished], (req, res) => {
     if (!(req.params.id && req.body.userId && req.params.id === req.body.userId)) {
         const msg = `${req.params.id} and ${req.body.userId} not the same`;
         return res.status(400).json({message : msg});
@@ -114,7 +117,7 @@ router.put(`/:id`, jsonParser, (req, res) => {
 
 // DELETE  Will we delete these conversations permanently?  Will we have them removed after several days/hours to save space?
 // Perhaps won't be concerned with deletion specifics until another iteration.
-router.delete(`/:id`, (req, res) => {
+router.delete(`/:id`, convoAuth, (req, res) => {
     Conversations.findByIdAndRemove(req.params.id)
     .then(() => res.status(204).end())
     .catch(error => {
