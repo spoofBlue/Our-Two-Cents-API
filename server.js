@@ -27,13 +27,12 @@ app.use(morgan(`dev`));
 app.use(express.json());
 
 // CORS
-/*   !!! specify a specific CLIENT_ORIGIN in config.js to account for localhost as well.
 app.use(
     cors({
         origin: CLIENT_ORIGIN
     })
 );
-*/
+
 
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
