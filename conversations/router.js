@@ -55,6 +55,7 @@ router.get(`/:id`, (req, res) => {
     Conversations
         .findById(req.params.id)
         .then(conversation => {
+            console.log(conversation.serialize());
             res.status(200).json(conversation.serialize());  
         })
         .catch(err => {
@@ -76,6 +77,7 @@ router.post(`/`, jsonParser, (req, res) => {
         Conversations
         .create({
             _id : req.body.conversationId,
+            channelURL : req.body.channelURL,
             conversationId : req.body.conversationId,
             hostUserId : req.body.hostUserId,
             hostUsername : req.body.hostUsername,
@@ -135,6 +137,17 @@ function checkPostRequestForErrors(req) {
     // are explicitly trimmed,  password adhere to character length requirements, and userEmail is unique in database.
     // Returns the array errorMessage, which populates only if errors occur.
     let errorMessage = [];
+    const requiredFields = [`channelURL`, `conversationId`, `hostUserId`,`guestUserId`];
+
+    requiredFields.forEach(field => {
+        if (!(field in req.body)) {
+            errorMessage.push({
+                message : `The field ${field} is missing from the request.` ,
+                field : field
+            });
+        }
+    });
+
     checkNotDuplicate = new Promise((response, reject) => {
         Conversations
         .find({conversationId : req.body.conversationId})

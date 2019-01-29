@@ -12,6 +12,7 @@ const messageSchema = new Schema({
 const ConversationSchema = mongoose.Schema({
     _id : {type : String},
     conversationId : {type : String, required : true},
+    channelURL : {type : String, required : true},
     hostUserId : {type : String, required : true},
     hostUsername : {type : String, required : true},
     guestUserId : {type : String, required : true},
@@ -26,6 +27,7 @@ const ConversationSchema = mongoose.Schema({
 ConversationSchema.methods.serialize = function() {
     return {
         conversationId : this.conversationId,
+        channelURL : this.channelURL,
         hostUserId : this.hostUserId,
         hostUsername : this.hostUsername ,
         guestUserId : this.guestUserId,
@@ -46,7 +48,7 @@ const Conversations = mongoose.model(`Conversations`, ConversationSchema);
 module.exports = {Conversations};
 
 /*
-possible schema architecture:
+possible schema architecture, combining availableConversation with Conversation:
 const ConversationSchema = mongoose.Schema({
     conversationId : {type : String, required : true},
     hostUserId : {type : String, required : true},
