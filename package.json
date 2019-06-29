@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/spoofBlue/Our-Two-Cents-API#readme",
   "dependencies": {
-    "bcrypt": "^3.0.2",
+    "bcrypt": "^3.0.6",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "chai": "^4.2.0",
